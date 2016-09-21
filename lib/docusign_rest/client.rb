@@ -255,20 +255,27 @@ module DocusignRest
     end
 
 
-    # TODO (2014-02-03) jonk => document
     def get_event_notification(event_notification)
       return {} unless event_notification
       {
-        useSoapInterface:          event_notification[:use_soap_interface] || false,
-        includeCertificatWithSoap: event_notification[:include_certificate_with_soap] || false,
-        url:                       event_notification[:url],
-        loggingEnabled:            event_notification[:logging],
-        'EnvelopeEvents' => Array(event_notification[:envelope_events]).map do |envelope_event|
-          {
-            includeDocuments:        envelope_event[:include_documents] || false,
-            envelopeEventStatusCode: envelope_event[:envelope_event_status_code]
-          }
-        end
+          useSoapInterface:          event_notification[:use_soap_interface] || false,
+          includeCertificatWithSoap: event_notification[:include_certificate_with_soap] || false,
+          url:                       event_notification[:url],
+          includeDocuments:          event_notification[:include_documents] || false,
+          loggingEnabled:            event_notification[:logging],
+          'envelopeEvents' => Array(event_notification[:envelope_events]).map do |envelope_event|
+            {
+                includeDocuments:        envelope_event[:include_documents] || false,
+                envelopeEventStatusCode: envelope_event[:envelope_event_status_code]
+            }
+          end,
+          'recipientEvents' => Array(event_notification[:recipient_events]).map do |recipient_event|
+            {
+                includeDocuments:        recipient_event[:include_documents] || false,
+                recipientEventStatusCode: recipient_event[:recipient_event_status_code]
+            }
+
+          end
       }
     end
 
@@ -308,23 +315,30 @@ module DocusignRest
 
       signers.each_with_index do |signer, index|
         doc_signer = {
-          email:                                 signer[:email],
-          name:                                  signer[:name],
-          accessCode:                            '',
-          addAccessCodeToEmail:                  false,
-          customFields:                          nil,
-          iDCheckConfigurationName:              nil,
-          iDCheckInformationInput:               nil,
-          inheritEmailNotificationConfiguration: false,
-          note:                                  '',
-          phoneAuthentication:                   nil,
-          recipientAttachment:                   nil,
-          recipientId:                           "#{index + 1}",
-          requireIdLookup:                       false,
-          roleName:                              signer[:role_name],
-          routingOrder:                          index + 1,
-          socialAuthentications:                 nil
+            email:                                 signer[:email],
+            name:                                  signer[:name],
+            accessCode:                            signer[:access_code] || '',
+            addAccessCodeToEmail:                  signer[:add_access_code_to_email] || false,
+            customFields:                          nil,
+            iDCheckConfigurationName:              signer[:id_check_configuration_name],
+            iDCheckInformationInput:               signer[:id_check_information_input],
+            inheritEmailNotificationConfiguration: signer[:inherit_email_notification_configuration] || false,
+            note:                                  '',
+            recipientAttachment:                   nil,
+            recipientId:                           "#{index + 1}",
+            requireIdLookup:                       signer[:require_id_lookup] || false,
+            roleName:                              signer[:role_name],
+            routingOrder:                          index + 1,
+            socialAuthentications:                 nil
         }
+
+        if signer[:sms_authentication]
+          doc_signer[:smsAuthentication] = signer[:sms_authentication]
+        end
+
+        if signer[:phone_authentication]
+          doc_signer[:phoneAuthentication] = signer[:phone_authentication]
+        end
 
         if signer[:email_notification]
           doc_signer[:emailNotification] = signer[:email_notification]
@@ -344,26 +358,26 @@ module DocusignRest
         doc_signer[:defaultRecipient] = false
         doc_signer[:signatureInfo]    = nil
         doc_signer[:tabs]             = {
-          approveTabs:          nil,
-          checkboxTabs:         get_tabs(signer[:checkbox_tabs], options, index),
-          companyTabs:          nil,
-          dateSignedTabs:       get_tabs(signer[:date_signed_tabs], options, index),
-          dateTabs:             nil,
-          declineTabs:          nil,
-          emailTabs:            get_tabs(signer[:email_tabs], options, index),
-          envelopeIdTabs:       nil,
-          fullNameTabs:         get_tabs(signer[:full_name_tabs], options, index),
-          listTabs:             get_tabs(signer[:list_tabs], options, index),
-          noteTabs:             nil,
-          numberTabs:           nil,
-          radioGroupTabs:       get_tabs(signer[:radio_group_tabs], options, index),
-          initialHereTabs:      get_tabs(signer[:initial_here_tabs], options.merge!(initial_here_tab: true), index),
-          signHereTabs:         get_tabs(signer[:sign_here_tabs], options.merge!(sign_here_tab: true), index),
-          signerAttachmentTabs: nil,
-          ssnTabs:              nil,
-          textTabs:             get_tabs(signer[:text_tabs], options, index),
-          titleTabs:            get_tabs(signer[:title_tabs], options, index),
-          zipTabs:              nil
+            approveTabs:          nil,
+            checkboxTabs:         get_tabs(signer[:checkbox_tabs], options, index),
+            companyTabs:          nil,
+            dateSignedTabs:       get_tabs(signer[:date_signed_tabs], options, index),
+            dateTabs:             nil,
+            declineTabs:          nil,
+            emailTabs:            get_tabs(signer[:email_tabs], options, index),
+            envelopeIdTabs:       nil,
+            fullNameTabs:         get_tabs(signer[:full_name_tabs], options, index),
+            listTabs:             get_tabs(signer[:list_tabs], options, index),
+            noteTabs:             nil,
+            numberTabs:           nil,
+            radioGroupTabs:       nil,
+            initialHereTabs:      get_tabs(signer[:initial_here_tabs], options.merge!(initial_here_tab: true), index),
+            signHereTabs:         get_tabs(signer[:sign_here_tabs], options.merge!(sign_here_tab: true), index),
+            signerAttachmentTabs: nil,
+            ssnTabs:              nil,
+            textTabs:             get_tabs(signer[:text_tabs], options, index),
+            titleTabs:            get_tabs(signer[:title_tabs], options, index),
+            zipTabs:              nil
         }
 
         # append the fully build string to the array
@@ -371,6 +385,7 @@ module DocusignRest
       end
       doc_signers
     end
+
 
 
     # TODO (2014-02-03) jonk => document
@@ -606,14 +621,15 @@ module DocusignRest
       file_params = create_file_params(ios)
 
       post_body = {
-        emailBlurb:   "#{options[:email][:body] if options[:email]}",
-        emailSubject: "#{options[:email][:subject] if options[:email]}",
-        documents: get_documents(ios),
-        recipients: {
-          signers: get_signers(options[:signers])
-        },
-        status: "#{options[:status]}",
-        customFields: options[:custom_fields]
+          emailBlurb:   "#{options[:email][:body] if options[:email]}",
+          emailSubject: "#{options[:email][:subject] if options[:email]}",
+          eventNotification:  get_event_notification(options[:event_notification]),
+          documents: get_documents(ios),
+          recipients: {
+              signers: get_signers(options[:signers]),
+
+          },
+          status: "#{options[:status]}"
       }.to_json
 
       uri = build_uri("/accounts/#{acct_id}/envelopes")
@@ -621,12 +637,13 @@ module DocusignRest
       http = initialize_net_http_ssl(uri)
 
       request = initialize_net_http_multipart_post_request(
-                  uri, post_body, file_params, headers(options[:headers])
-                )
+          uri, post_body, file_params, headers(options[:headers])
+      )
 
       response = http.request(request)
       JSON.parse(response.body)
     end
+
 
 
     # Public: allows a template to be dynamically created with several options.
