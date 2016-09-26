@@ -370,7 +370,7 @@ module DocusignRest
             listTabs:             get_tabs(signer[:list_tabs], options, index),
             noteTabs:             nil,
             numberTabs:           nil,
-            radioGroupTabs:       nil,
+            radioGroupTabs:       get_tabs(signer[:radio_group_tabs], options, index),
             initialHereTabs:      get_tabs(signer[:initial_here_tabs], options.merge!(initial_here_tab: true), index),
             signHereTabs:         get_tabs(signer[:sign_here_tabs], options.merge!(sign_here_tab: true), index),
             signerAttachmentTabs: nil,
@@ -639,6 +639,8 @@ module DocusignRest
       request = initialize_net_http_multipart_post_request(
           uri, post_body, file_params, headers(options[:headers])
       )
+
+      byebug
 
       response = http.request(request)
       JSON.parse(response.body)
