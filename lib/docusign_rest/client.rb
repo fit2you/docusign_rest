@@ -627,7 +627,6 @@ module DocusignRest
           documents: get_documents(ios),
           recipients: {
               signers: get_signers(options[:signers]),
-
           },
           status: "#{options[:status]}"
       }.to_json
@@ -639,8 +638,6 @@ module DocusignRest
       request = initialize_net_http_multipart_post_request(
           uri, post_body, file_params, headers(options[:headers])
       )
-
-      byebug
 
       response = http.request(request)
       JSON.parse(response.body)
