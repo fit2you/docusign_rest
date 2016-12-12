@@ -720,8 +720,6 @@ module DocusignRest
           uri, post_body, file_params, headers(options[:headers])
       )
 
-      byebug
-
       response = http.request(request)
       JSON.parse(response.body)
     end
