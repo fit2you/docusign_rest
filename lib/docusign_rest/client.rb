@@ -628,11 +628,6 @@ module DocusignRest
       request = initialize_net_http_multipart_post_request(
                   uri, post_body, file_params, headers(options[:headers])
                 )
-      p "==============================="
-      p post_body
-      p "==============================="
-      p file_params
-      p "==============================="
       response = http.request(request)
       JSON.parse(response.body)
     end
