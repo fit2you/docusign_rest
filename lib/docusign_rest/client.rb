@@ -505,6 +505,8 @@ module DocusignRest
         tab_hash[:tabLabel]   = tab[:label] || 'Signature 1'
         tab_hash[:width]      = tab[:width] if tab[:width]
         tab_hash[:height]     = tab[:height] if tab[:width]
+        tab_hash[:fontColor]  = tab[:font_color] if tab[:font_color]
+        tab_hash[:disableAutoSize] =  tab[:disable_auto_size] if tab[:disable_auto_size]
         tab_hash[:value]      = tab[:value] if tab[:value]
         tab_hash[:selected]   = tab[:selected] if tab[:selected]
 
@@ -585,11 +587,12 @@ module DocusignRest
     # documentId
     #
     # Returns a hash of documents that are to be uploaded
-    def get_documents(ios)
+    def get_documents(ios, transform_pdf_fields = false)
       ios.each_with_index.map do |io, index|
         {
             documentId: "#{index + 1}",
-            name: io.original_filename
+            name: io.original_filename,
+            transformPdfFields: transform_pdf_fields
         }
       end
     end
@@ -698,12 +701,13 @@ module DocusignRest
     def create_envelope_from_document(options={})
       ios = create_file_ios(options[:files])
       file_params = create_file_params(ios)
+      transform_pdf_fields = options[:transform_pdf_fields] || false
 
       post_body = {
           emailBlurb:   "#{options[:email][:body] if options[:email]}",
           emailSubject: "#{options[:email][:subject] if options[:email]}",
           eventNotification:  get_event_notification(options[:event_notification]),
-          documents: get_documents(ios),
+          documents: get_documents(ios, transform_pdf_fields),
           recipients: {
               signers: get_signers(options.fetch(:signers){[]}),
               carbonCopies: get_signers(options.fetch(:carbon_copies){[]}),
