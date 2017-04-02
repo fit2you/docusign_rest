@@ -504,7 +504,7 @@ module DocusignRest
         tab_hash[:optional]   = tab[:optional] || false
         tab_hash[:tabLabel]   = tab[:label] || 'Signature 1'
         tab_hash[:width]      = tab[:width] if tab[:width]
-        tab_hash[:height]     = tab[:height] if tab[:width]
+        tab_hash[:height]     = tab[:height] if tab[:height]
         tab_hash[:fontColor]  = tab[:font_color] if tab[:font_color]
         tab_hash[:disableAutoSize] =  tab[:disable_auto_size] if tab[:disable_auto_size]
         tab_hash[:value]      = tab[:value] if tab[:value]
@@ -713,7 +713,8 @@ module DocusignRest
               carbonCopies: get_signers(options.fetch(:carbon_copies){[]}),
               inPersonSigners: get_in_person_signers(options.fetch(:in_person_signers){[]})
           },
-          status: "#{options[:status]}"
+          status: "#{options[:status]}",
+          customFields: options[:custom_fields]
       }.to_json
 
       uri = build_uri("/accounts/#{acct_id}/envelopes")
