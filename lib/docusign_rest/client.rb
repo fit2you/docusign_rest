@@ -726,9 +726,6 @@ module DocusignRest
           uri, post_body, file_params, headers(options[:headers])
       )
 
-      puts post_body
-      puts file_params
-
       response = http.request(request)
       JSON.parse(response.body)
     end
