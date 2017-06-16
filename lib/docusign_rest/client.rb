@@ -463,11 +463,12 @@ module DocusignRest
       #
       ios = []
       files.each_with_index do |file, index|
+        document_id =  file.fetch(:document_id){index+1}
         ios << UploadIO.new(
                  file[:io] || file[:path],
                  file[:content_type] || 'application/pdf',
                  file[:name],
-                 'Content-Disposition' => "file; documentid=#{index + 1}"
+                 'Content-Disposition' => "file; documentid=#{document_id}"
                )
       end
       ios
