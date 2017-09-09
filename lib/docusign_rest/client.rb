@@ -1531,6 +1531,19 @@ module DocusignRest
     end
 
 
+    def resend_reminder(envelope_id)
+      content_type = { 'Content-Type' => 'application/json' }
+      uri = build_uri("/accounts/#{acct_id}/envelopes/#{envelope_id}/recipients?resend_envelope=true")
+      post_body = get_envelope_recipients(envelope_id: envelope_id).to_json
+
+      http = initialize_net_http_ssl(uri)
+      request = Net::HTTP::Put.new(uri.request_uri, headers(content_type))
+      request.body = post_body
+      response = http.request(request)
+      JSON.parse(response.body)
+    end
+
+
     # Public retrieves folder information. Helpful to use before client.search_folder_for_envelopes
     def get_folder_list(options={})
       content_type = { 'Content-Type' => 'application/json' }
