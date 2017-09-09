@@ -1349,6 +1349,18 @@ module DocusignRest
     end
 
 
+
+    def get_envelope_custom_fields(envelope_id)
+      content_type = { 'Content-Type' => 'application/json' }
+      uri = build_uri("/accounts/#{acct_id}/envelopes/#{envelope_id}/custom_fields")
+      http = initialize_net_http_ssl(uri)
+      request = Net::HTTP::Get.new(uri.request_uri, headers(content_type))
+      response = http.request(request)
+      JSON.parse(response.body)
+    end
+
+
+
     # Public deletes a recipient for a given envelope
     #
     # envelope_id  - ID of the envelope for which you want to retrieve the
