@@ -1361,7 +1361,7 @@ module DocusignRest
 
     def get_envelope_tabs(envelope_id, recipient_id = 1)
       content_type = { 'Content-Type' => 'application/json' }
-      uri = build_uri("accounts/#{acct_id}/envelopes/#{envelope_id}/recipients/#{recipient_id}/tabs")
+      uri = build_uri("/accounts/#{acct_id}/envelopes/#{envelope_id}/recipients/#{recipient_id}/tabs")
       http = initialize_net_http_ssl(uri)
       request = Net::HTTP::Get.new(uri.request_uri, headers(content_type))
       response = http.request(request)
