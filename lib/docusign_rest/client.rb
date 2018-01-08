@@ -1543,6 +1543,16 @@ module DocusignRest
       JSON.parse(response.body)
     end
 
+    def retry(envelope_id)
+      content_type = { 'Content-Type' => 'application/json' }
+      uri = build_uri("/accounts/#{acct_id}/connect/envelopes/#{envelope_id}/retry_queue")
+      http = initialize_net_http_ssl(uri)
+      request = Net::HTTP::Put.new(uri.request_uri, headers(content_type))
+      request.body = ''
+      response = http.request(request)
+      JSON.parse(response.body)
+    end
+
 
     # Public retrieves folder information. Helpful to use before client.search_folder_for_envelopes
     def get_folder_list(options={})
