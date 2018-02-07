@@ -1377,6 +1377,15 @@ module DocusignRest
       JSON.parse(response.body)
     end
 
+    def email_registred?(email)
+      content_type = { 'Content-Type' => 'application/json' }
+      uri = build_uri("/accounts/#{acct_id}/users?status=Active&email=#{email}")
+      http = initialize_net_http_ssl(uri)
+      request = Net::HTTP::Get.new(uri.request_uri, headers(content_type))
+      response = http.request(request)
+      JSON.parse(response.body)
+    end
+
 
     # Public deletes a recipient for a given envelope
     #
