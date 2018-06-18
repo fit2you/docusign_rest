@@ -263,6 +263,7 @@ module DocusignRest
           url:                       event_notification[:url],
           includeDocuments:          event_notification[:include_documents] || false,
           loggingEnabled:            event_notification[:logging],
+          requireAcknowledgment:     true,
           'envelopeEvents' => Array(event_notification[:envelope_events]).map do |envelope_event|
             {
                 includeDocuments:        envelope_event[:include_documents] || false,
